@@ -1,0 +1,6 @@
+@"
+python-telegram-bot==21.7
+python-dotenv==1.0.0
+pyserial==3.5
+requests==2.31.0
+"@ | Out-File -FilePath "requirements.txt" -Encoding utf8

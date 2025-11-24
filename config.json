@@ -1,0 +1,15 @@
+{
+    "auto_mode": true,
+    "watering_duration": 5,
+    "notifications": true,
+    "moisture_threshold": 400,
+    "report_interval": 30,
+    "last_watering": "2025-11-24T22:13:58.156822",
+    "watering_count_today": 43,
+    "last_watering_date": "2025-11-24",
+    "auto_mode_type": "smart",
+    "dont_ask_again_today": true,
+    "dont_ask_again_date": "2025-11-24",
+    "schedule_morning_time": "09:00",
+    "schedule_evening_time": "19:00"
+}

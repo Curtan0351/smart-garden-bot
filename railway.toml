@@ -1,0 +1,8 @@
+@"
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "python bot.py"
+restartPolicyType = "on_failure"
+"@ | Out-File -FilePath "railway.toml" -Encoding utf8
