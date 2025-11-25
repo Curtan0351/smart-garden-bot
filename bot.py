@@ -9,9 +9,22 @@ from datetime import datetime, timedelta
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 from dotenv import load_dotenv
+import atexit
 
-# Загружаем переменные окружения
+# Загружаем переменные окружения ПЕРВЫМ делом
 load_dotenv()
+
+# Получаем настройки из переменных окружения
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+NODEMCU_IP = os.getenv('NODEMCU_IP', '192.168.0.119')
+
+if not BOT_TOKEN:
+    print("❌ ОШИБКА: BOT_TOKEN не установлен!")
+    print("📝 Создайте файл .env с содержанием:")
+    print("BOT_TOKEN=ваш_токен_бота")
+    sys.exit(1)
+
+print(f"🔧 Настройки: BOT_TOKEN={'*' * 10}, NODEMCU_IP={NODEMCU_IP}")
 
 # Настройка логирования
 logging.basicConfig(
@@ -19,12 +32,10 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-BOT_TOKEN = os.getenv('BOT_TOKEN')
-
 # Импортируем и инициализируем контроллер NodeMCU
 from nodemcu_http_controller import NodeMCUHTTPController
-NODEMCU_IP = os.getenv('NODEMCU_IP', '192.168.0.119')
 nodemcu = NodeMCUHTTPController(NODEMCU_IP)
+
 # Файл конфигурации
 CONFIG_FILE = 'config.json'
 
@@ -44,51 +55,23 @@ DEFAULT_CONFIG = {
     'dont_ask_again_today': False
 }
 
-def signal_handler(sig, frame):
-    print('🚨 Получен сигнал завершения...')
+def cleanup():
+    """Очистка ресурсов перед завершением"""
+    print("🧹 Очистка ресурсов перед завершением...")
     if 'nodemcu' in globals():
         nodemcu.disconnect()
+
+def signal_handler(sig, frame):
+    """Обработчик сигналов завершения"""
+    print('🚨 Получен сигнал завершения...')
+    cleanup()
     sys.exit(0)
 
+# Регистрируем обработчики СРАЗУ после определения функций
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
+atexit.register(cleanup)
 
-
-def main():
-    # Проверяем токен бота
-    if not BOT_TOKEN:
-        print("❌ ОШИБКА: BOT_TOKEN не найден в .env файле!")
-        return
-    
-    # Подключаемся к NodeMCU по Wi-Fi
-    print(f"🔌 Подключаемся к NodeMCU ({NODEMCU_IP})...")
-    if nodemcu.connect():
-        print("✅ Успешное подключение к NodeMCU по Wi-Fi")
-    else:
-        print("❌ Не удалось подключиться к NodeMCU")
-        print("💡 Проверьте:")
-        print(f"   • IP адрес: {NODEMCU_IP}")
-        print("   • NodeMCU подключен к Wi-Fi")
-        print("   • NodeMCU включен")
-    
-    # Инициализируем конфиг
-    load_config()
-    
-    # Создаем Application
-    application = Application.builder().token(BOT_TOKEN).build()
-
-    # Обработчики
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    # Запуск бота
-    print("🤖 Бот запущен...")
-    if nodemcu.connected:
-        print("🌿 Режим: АВТОНОМНАЯ СИСТЕМА (Wi-Fi)")
-    else:
-        print("🌿 Режим: ОЖИДАНИЕ ПОДКЛЮЧЕНИЯ")
-    
-    application.run_polling()
 def load_config():
     """Загружает настройки из файла"""
     if os.path.exists(CONFIG_FILE):
@@ -973,8 +956,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     # Проверяем токен бота
     if not BOT_TOKEN:
-        print("❌ ОШИБКА: BOT_TOKEN не найден в .env файле!")
-        print("📝 Создайте файл .env и добавьте: BOT_TOKEN=ваш_токен")
+        print("❌ ОШИБКА: BOT_TOKEN не найден!")
+        print("📝 Создайте файл .env с содержанием:")
+        print("BOT_TOKEN=8199108683:AAEACzbeOYc9f7IsxIlFXkSSywBx94Es-x0")
         return
     
     # Пытаемся подключиться к NodeMCU
